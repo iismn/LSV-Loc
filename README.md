@@ -1,34 +1,86 @@
- ![header](https://capsule-render.vercel.app/api?type=rect&color=timeGradient&text=LSV-Loc:%20LiDAR%20to%20Street%20View%20Image%20Crossmodal%20Localization&fontSize=20)
+# LSV-Loc: LiDAR to StreetView Image Cross-Modal Localization
+
+Official implementation of:
+
+**S. Lee, D. Choi, and J.-H. Ryu, "LSV-Loc: LiDAR to StreetView Image Cross-Modal Localization," IEEE Robotics and Automation Letters, 2026.**
+
+LSV-Loc is a cross-modal localization framework that matches LiDAR range images with StreetView images for large-scale vehicle localization. The framework supports multiple LiDAR configurations and learns a shared representation between LiDAR and camera observations for cross-modal place recognition and pose estimation.
 
 ## Overview
-**LSV-Loc: LiDAR to Street View Image Crossmodal Localization** is a cross-modal place recognition framework for LiDAR-to-Street View localization. It leverages range image representations from various LiDAR sensors and matches them against street-view camera images using advanced deep learning techniques.
 
-### Supported Features
-- **Multi-LiDAR Support** — Compatible with various LiDAR sensors (HDL-32E, HDL-64E, OS1-32, OS1-64, OS2-32, OS2-64)
-- **Cross-Modal Matching** — Efficient LiDAR-to-Camera place recognition
-- **DDP Training** — Distributed Data Parallel training for multi-GPU acceleration
-- **Multiple Backbones** — Support for DINOv2, CLIP, and SEA-lite models
+LSV-Loc provides:
 
-### Supported Datasets
-- **MulRan** — Multi-sensor urban dataset
-- **ComplexUrban** — Complex urban driving scenarios
-- **HeLiPR** — Heterogeneous LiDAR place recognition dataset
-- **STheReo** — Stereo thermal dataset
-- **InHouse** — Custom dataset support
+- LiDAR-to-StreetView cross-modal place recognition
+- Support for multiple LiDAR configurations
+- DINOv2, CLIP, and SEA-lite based feature extractors
+- Distributed training with PyTorch DDP
+- Place recognition evaluation
+- PnP-based metric localization
+- Support for multiple public and in-house datasets
 
-## Key Components
+## Supported LiDAR Sensors
+
+The current implementation supports range-image generation and evaluation for multiple LiDAR configurations, including:
+
+- Velodyne HDL-32E
+- Velodyne HDL-64E
+- Ouster OS1-32
+- Ouster OS1-64
+- Ouster OS2-32
+- Ouster OS2-64
+
+## Supported Datasets
+
+The repository includes configurations and utilities for:
+
+- [MulRan](https://sites.google.com/view/mulran-pr/home)
+- ComplexUrban
+- HeLiPR
+- STheReo
+- MA-LIO
+- In-house datasets
+
+## Repository Structure
+
+```text
+LSV-Loc/
+├── trainer.py
+├── evaluate_PR.py
+├── evaluate_VIS.py
+├── evaluate_PnP.py
+├── requirements.txt
+├── setup.py
+├── config/
+│   ├── strv_config.py
+│   └── strv_eval.py
+├── utility/
+│   ├── Backbone/
+│   ├── Database/
+│   ├── Network/
+│   ├── Eval/
+│   └── Etc/
+└── result/
+```
+
+### Main Components
+
 | Module | Description |
-|--------|-------------|
-| **CLIP_AIO** | All-in-one CLIP-based backbone for cross-modal feature extraction |
-| **match_SEA_lite** | Lightweight scene-aware encoder for efficient matching |
-| **strvDataset_AIO** | Unified dataloader for street-view and range image pairs |
-| **networkTool** | Training utilities including loss functions and optimizers |
-| **evaluateTool** | Evaluation metrics for place recognition (Recall@K, etc.) |
+| --- | --- |
+| `trainer.py` | Training entry point |
+| `evaluate_PR.py` | Place recognition evaluation |
+| `evaluate_VIS.py` | Retrieval visualization |
+| `evaluate_PnP.py` | PnP-based metric localization evaluation |
+| `utility/Backbone` | Feature extraction backbones |
+| `utility/Database` | Dataset loaders and preprocessing |
+| `utility/Network` | Training losses and network utilities |
+| `utility/Eval` | Evaluation functions and metrics |
+| `config` | Training and evaluation configurations |
 
-## Environment Setup
+## Environment
 
-### Docker Environment (Recommended)
-This project requires a specific Docker environment with CUDA support:
+The repository is designed for a CUDA-enabled Linux environment.
+
+A Docker environment can be created with:
 
 ```bash
 sudo docker run -it \
@@ -43,9 +95,9 @@ sudo docker run -it \
     --runtime=nvidia \
     -v /home/$USER/Workspace_Share/:/home/$USER/Workspace/ \
     -v /home/$USER/Documents/:/home/$USER/Documents/ \
-    -v /dev:/dev\
-    -v /dev/shm:/dev/shm\
-    --privileged\
+    -v /dev:/dev \
+    -v /dev/shm:/dev/shm \
+    --privileged \
     --net=host \
     --ipc=host \
     --pid=host \
@@ -53,112 +105,120 @@ sudo docker run -it \
     iismn/ubuntu_cuda_gl:LTS24-CUDA12-x86
 ```
 
-### Dependencies Installation
-After entering the Docker container:
+## Installation
+
+Clone the repository:
 
 ```bash
-git clone https://github.com/iismn/IEEE_RA-L_LSV-Loc.git
-cd IEEE_RA-L_LSV-Loc
+git clone https://github.com/iismn/LSV-Loc.git
+cd LSV-Loc
+```
+
+Install the required Python packages:
+
+```bash
 pip install -r requirements.txt
 ```
 
-**Note:** For PyTorch and torchvision, please install them according to your specific CUDA version directly from [pytorch.org](https://pytorch.org).
+PyTorch and torchvision should be installed separately according to the CUDA version of the host system.
 
-## Quick Start
+See the official [PyTorch installation guide](https://pytorch.org/) for details.
 
-### Train
+## Training
+
+Training parameters are defined in `config/strv_config.py`.
+
+Run training with:
+
 ```bash
-# Train with default configuration
 python trainer.py --train_config strv_config
+```
 
-# Train with custom configuration
+A custom configuration can also be specified:
+
+```bash
 python trainer.py --train_config your_custom_config
 ```
 
-### Evaluate Place Recognition
+## Evaluation
+
+### Place Recognition
+
 ```bash
-# Evaluate place recognition performance
 python evaluate_PR.py
+```
 
-# Evaluate with visualization
+### Retrieval Visualization
+
+```bash
 python evaluate_VIS.py
+```
 
-# Evaluate PnP localization
+### PnP Localization
+
+```bash
 python evaluate_PnP.py
 ```
 
 ## Configuration
-Training configurations are located in `config/` directory. Key parameters include:
+
+Example training parameters include:
 
 | Parameter | Description | Default |
-|-----------|-------------|---------|
-| `batch_size` | GPU batch size | 10 |
-| `epochs` | Training epochs | 50 |
+| --- | --- | ---: |
+| `batch_size` | Batch size per GPU | 10 |
+| `epochs` | Number of training epochs | 50 |
 | `image_size` | Input image resolution | 518 |
-| `model_name` | Backbone model | match_SEA_lite |
-| `threshold_dist` | Positive distance threshold (m) | 25 |
-| `final_embedding_dim` | Feature embedding dimension | 512 |
-
-## Repository Structure
-```
-LSV-Loc/
-├── trainer.py                # Main training script
-├── evaluate_PR.py            # Place recognition evaluation
-├── evaluate_VIS.py           # Visualization evaluation
-├── evaluate_PnP.py           # PnP localization evaluation
-├── requirements.txt          # Python dependencies
-├── setup.py                  # Package setup
-├── config/
-│   ├── strv_config.py        # Training configuration
-│   └── strv_eval.py          # Evaluation configuration
-├── utility/
-│   ├── Backbone/             # Model backbones (CLIP, SEA-lite)
-│   ├── Database/             # Dataset loaders
-│   ├── Network/              # Network utilities
-│   ├── Eval/                 # Evaluation tools
-│   └── Etc/                  # Miscellaneous utilities
-└── result/                   # Training outputs and checkpoints
-```
+| `model_name` | Feature extraction backbone | `match_SEA_lite` |
+| `threshold_dist` | Positive distance threshold | 25 m |
+| `final_embedding_dim` | Descriptor dimension | 512 |
 
 ## Dataset Structure
-The dataset should be organized under `dataset/SVR_Dataset_Sync/` with the following structure:
 
-```
+Datasets are organized under:
+
+```text
 dataset/SVR_Dataset_Sync/
-├── MulRan/                           # MulRan Dataset
-│   ├── DCC01/                        # Sequence name
-│   │   ├── DB/                       # Database (Street View Images)
-│   │   │   └── {frame_id}/           # Frame folder
-│   │   │       └── {frame_id}_Equi.png   # Equirectangular street view image
-│   │   ├── DB_Pos/                   # Database positions
-│   │   ├── Q/                        # Query (Range Images)
-│   │   │   └── {frame_id}.png        # Range image
-│   │   ├── Q_Pos/                    # Query positions
-│   │   └── Q_Range/                  # Query range data
-│   └── KAIST01/                      # Another sequence
+```
+
+An example directory structure is:
+
+```text
+dataset/SVR_Dataset_Sync/
+├── MulRan/
+│   ├── DCC01/
+│   │   ├── DB/
+│   │   │   └── {frame_id}/
+│   │   │       └── {frame_id}_Equi.png
+│   │   ├── DB_Pos/
+│   │   ├── Q/
+│   │   │   └── {frame_id}.png
+│   │   ├── Q_Pos/
+│   │   └── Q_Range/
+│   └── KAIST01/
 │
-├── ComplexUrbanDataset/              # Complex Urban Dataset
+├── ComplexUrbanDataset/
 │   ├── Urban01/
 │   ├── Urban02/
 │   ├── Urban13/
 │   └── Urban15/
 │
-├── HeLiPR/                           # HeLiPR Dataset
+├── HeLiPR/
 │   ├── Bridge04/
 │   ├── Riverside06/
 │   ├── Roundabout01/
 │   └── Town01/
 │
-├── STheReo/                          # STheReo Dataset
+├── STheReo/
 │   ├── SNU_Afternoon/
 │   └── Valley_Afternoon/
 │
-├── MA_LIO/                           # MA-LIO Dataset
+├── MA_LIO/
 │   ├── City01/
 │   ├── City02/
 │   └── City03/
 │
-├── InHouse/                          # InHouse Custom Dataset
+├── InHouse/
 │   ├── ComplexUrbanDataset/
 │   ├── Dunsan/
 │   ├── KAIST/
@@ -166,40 +226,60 @@ dataset/SVR_Dataset_Sync/
 │   ├── SVR_Test_MiniBatch.mat
 │   └── SVR_Train_MiniBatch.mat
 │
-├── MAT/                              # Precomputed MAT files for training/testing
-│   ├── SVR_Train.mat                 # Training data indices
-│   ├── SVR_Test_All.mat              # All test data
-│   ├── SVR_Test_ComplexUrban05.mat   # ComplexUrban test split
+├── MAT/
+│   ├── SVR_Train.mat
+│   ├── SVR_Test_All.mat
+│   ├── SVR_Test_ComplexUrban05.mat
 │   ├── SVR_Test_ComplexUrban08.mat
 │   ├── SVR_Test_Dunsan.mat
 │   └── SVR_Test_Roundabout01.mat
 │
-└── Utils/                            # Utility scripts for data preparation
-    ├── streetviewImg_DWL_Main.py     # Street view image downloader
-    ├── streetviewImg_DWL_Inhouse.py  # Inhouse data downloader
+└── Utils/
+    ├── streetviewImg_DWL_Main.py
+    ├── streetviewImg_DWL_Inhouse.py
     ├── panorama_photo_date_average.py
-    └── MATLAB_API/                   # MATLAB utilities
+    └── MATLAB_API/
 ```
 
 ### Data Format
-- **Street View Images (DB)**: Equirectangular panorama images (`*_Equi.png`)
-- **Range Images (Q)**: LiDAR range images projected as 2D images (`.png`)
-- **Position Files**: GPS/UTM coordinates for database and query frames
-- **MAT Files**: MATLAB format files containing training/testing indices and metadata
+
+- **Database images (`DB`)**: Equirectangular StreetView images
+- **Query images (`Q`)**: LiDAR range images
+- **Position files**: Ground-truth or reference positions for database and query samples
+- **MAT files**: Training and evaluation indices and metadata
 
 ## Citation
+
+If you use this repository in your research, please cite:
+
 ```bibtex
-@ARTICLE{LSVLoc,
+@article{LSVLoc,
   author={Lee, Sangmin and Choi, Donghyun and Ryu, Jee-Hwan},
-  journal={IEEE Robotics and Automation Letters}, 
-  title={LSV-Loc: LiDAR to StreetView Image Cross-Modal Localization}, 
+  journal={IEEE Robotics and Automation Letters},
+  title={LSV-Loc: LiDAR to StreetView Image Cross-Modal Localization},
   year={2026},
   volume={11},
   number={3},
-  pages={2514-2521},
-  keywords={Location awareness;Laser radar;Sensors;Feature extraction;Global Positioning System;Accuracy;Transformers;Image recognition;Cameras;Semantics;Localization;autonomous vehicle navigation;place recognition},
-  doi={10.1109/LRA.2026.3653282}}
+  pages={2514--2521},
+  doi={10.1109/LRA.2026.3653282}
+}
 ```
 
+## Paper
+
+Sangmin Lee, Donghyun Choi, and Jee-Hwan Ryu,  
+**LSV-Loc: LiDAR to StreetView Image Cross-Modal Localization**,  
+IEEE Robotics and Automation Letters, Vol. 11, No. 3, pp. 2514-2521, 2026.
+
+[IEEE Xplore](https://doi.org/10.1109/LRA.2026.3653282)
+
 ## License
-Released under the MIT License. See `LICENSE` for details.
+
+This project is released under the MIT License. See [LICENSE](LICENSE) for details.
+
+## Contact
+
+**Sangmin Lee**  
+Korea Advanced Institute of Science and Technology (KAIST)
+
+For questions regarding the paper or implementation, please open an issue in this repository.
