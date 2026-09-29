@@ -1,6 +1,4 @@
-# LSV-Loc: LiDAR to Street View Image Cross-Modal Localization
-
-![header](https://capsule-render.vercel.app/api?type=rect&color=timeGradient&text=LSV-Loc:%20LiDAR%20to%20Street%20View%20Image%20Crossmodal%20Localization&fontSize=20)
+ ![header](https://capsule-render.vercel.app/api?type=rect&color=timeGradient&text=LSV-Loc:%20LiDAR%20to%20Street%20View%20Image%20Crossmodal%20Localization&fontSize=20)
 
 ## Overview
 **LSV-Loc: LiDAR to Street View Image Crossmodal Localization** is a cross-modal place recognition framework for LiDAR-to-Street View localization. It leverages range image representations from various LiDAR sensors and matches them against street-view camera images using advanced deep learning techniques.
